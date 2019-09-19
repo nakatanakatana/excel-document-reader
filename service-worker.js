@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/excel-document-reader/precache-manifest.b49712ce6f552c6189c689812d9d3308.js"
+  "/excel-document-reader/precache-manifest.a57505ad3e79b27e875bfd511a8cc794.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "excel-document-reader"});
