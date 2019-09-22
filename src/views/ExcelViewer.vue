@@ -1,6 +1,6 @@
 <template>
   <v-row no-gutters>
-    <v-col cols="12">
+    <v-col>
       <v-expansion-panels accordion v-model="panel">
         <v-expansion-panel>
           <v-expansion-panel-header>
@@ -82,8 +82,8 @@
                 ></v-pagination>
               </v-col>
             </v-row>
-            <v-row no-gutters>
-              <v-col cols="12">
+            <v-row>
+              <v-col>
                 <v-card v-for="row of currentRow" :key="row.key">
                   <v-card-title>{{ getHeader(row.key) }}</v-card-title>
                   <v-card-text>{{ row.value }}</v-card-text>
@@ -204,3 +204,9 @@ export default class ExcelViewer extends Vue {
   }
 }
 </script>
+
+<style scoped>
+.v-card__text {
+  width: auto;
+}
+</style>
