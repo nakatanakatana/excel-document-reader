@@ -20,14 +20,14 @@
             <v-row no-gutters>
               <v-col cols="10" md="3">
                 <v-select
-                  v-model="sheetname"
+                  v-model="selectSheet"
                   :items="sheetnames"
                   label="sheet name"
                 />
               </v-col>
               <v-col cols="1">
                 <v-text-field
-                  v-model.number="headerRow"
+                  v-model.number="selectHeaderRow"
                   type="number"
                   label="header row"
                 />
@@ -78,15 +78,15 @@
                 <v-pagination
                   :length="dataLength"
                   :total-visible="7"
-                  v-model="currentPage"
+                  v-model="selectCurrentPage"
                 ></v-pagination>
               </v-col>
             </v-row>
             <v-row>
               <v-col>
-                <v-card v-for="row of currentRow" :key="row.key">
-                  <v-card-title>{{ getHeader(row.key) }}</v-card-title>
-                  <v-card-text>{{ row.value }}</v-card-text>
+                <v-card v-for="(row, index) in currentRow" :key="index">
+                  <v-card-title>{{ getHeader(index) }}</v-card-title>
+                  <v-card-text v-if="row && row.w">{{ row.w }}</v-card-text>
                 </v-card>
               </v-col>
             </v-row>
@@ -101,102 +101,74 @@
 import { Component, Watch, Vue } from "vue-property-decorator";
 import XLSX from "xlsx";
 
+import { xlsxFileModule } from "@/store/xlsxFileModule";
+
 interface KV {
   key: number;
   value: string;
 }
 
-@Component({})
-export default class ExcelViewer extends Vue {
+const Super = Vue.extend({
+  computed: {
+    ...xlsxFileModule.mapGetters([
+      "filename",
+      "sheetname",
+      "headerRow",
+      "currentPage",
+      "currentRow",
+      "sheetnames",
+      "headers",
+      "getHeader",
+      "dataLength"
+    ])
+  },
+  methods: {
+    ...xlsxFileModule.mapActions([
+      "setFilename",
+      "setWorkBook",
+      "setHeaderRow",
+      "setCurrentPage",
+      "setSheet"
+    ])
+  }
+});
+
+@Component
+export default class ExcelViewer extends Super {
   panel: number = 0;
-  filename: string = "";
-  workbook: XLSX.WorkBook | null = null;
-  sheetname: string = "";
-  sheet: XLSX.Sheet | null = null;
-  range: XLSX.Range | null = null;
-  headerRow: number = 0;
-  currentPage: number = 1;
   filterColumn: KV | null = null;
 
-  get sheetnames(): string[] {
-    if (this.workbook) {
-      return this.workbook.SheetNames;
-    } else {
-      return [""];
-    }
+  get selectSheet() {
+    return this.sheetname;
   }
 
-  get headers(): KV[] {
-    const headerData: KV[] = [];
-    if (this.headerRow !== null) {
-      const row = this.getSheetRow(this.headerRow);
-      if (row) {
-        row.forEach((x, index) => {
-          if (x && x.w) {
-            headerData.push({ key: index, value: x.w });
-          }
-        });
-      }
-    }
-    return headerData;
+  set selectSheet(sheetname: string) {
+    this.setSheet(sheetname);
   }
 
-  get dataLength(): number {
-    if (this.workbook && this.range) {
-      return this.range.e.r - this.headerRow;
-    }
-    return 0;
+  get selectHeaderRow() {
+    return this.headerRow;
   }
 
-  get currentRow() {
-    const data: KV[] = [];
-    const row = this.getSheetRow(this.headerRow + this.currentPage);
-    if (row) {
-      row.forEach((x, index) => {
-        if (x && x.w) {
-          data.push({ key: index, value: x.w });
-        }
-      });
-    }
-    return data;
+  set selectHeaderRow(num: number) {
+    this.setHeaderRow(num);
   }
 
-  getHeader(num: number) {
-    if (this.headers) {
-      const cell = this.headers.filter(x => x.key === num);
-      if (cell && cell[0] && cell[0].value) {
-        return cell[0].value;
-      }
-      return "";
-    }
+  get selectCurrentPage() {
+    return this.currentPage;
   }
 
-  getSheetRow(num: number) {
-    if (this.sheet && this.range && num <= this.range.e.r) {
-      const row: (XLSX.CellObject | undefined)[] = [];
-      for (let i = 0; i < this.range.e.c; i++) {
-        row.push(this.sheet[XLSX.utils.encode_cell({ r: num, c: i })]);
-      }
-      return row;
-    }
-  }
-
-  @Watch("sheetname")
-  setSeet() {
-    if (this.workbook && this.sheetname) {
-      this.sheet = this.workbook.Sheets[this.sheetname];
-      this.range = XLSX.utils.decode_range(this.sheet["!ref" as string]);
-    }
+  set selectCurrentPage(num: number) {
+    this.setCurrentPage(num);
   }
 
   async load(payload: File) {
-    this.filename = payload.name;
+    await this.setFilename(payload.name);
     const reader = new FileReader();
     reader.onload = e => {
       if (e && e.target) {
         const xlsxData = XLSX.read(e.target.result, { type: "array" });
-        this.workbook = xlsxData;
-        this.sheetname = xlsxData.SheetNames[0];
+        this.setWorkBook(xlsxData);
       }
     };
     await reader.readAsArrayBuffer(payload);
