@@ -1,9 +1,11 @@
 <template>
   <v-row no-gutters>
     <v-col>
-      <v-expansion-panels accordion v-model="panel">
+      <v-expansion-panels accordion focusable v-model="panel">
         <v-expansion-panel>
-          <v-expansion-panel-header>
+          <v-expansion-panel-header
+            :class="panel > 0 ? 'primary lighten-4' : ''"
+          >
             FILE
             <span v-if="panel > 0">"{{ filename }}"</span>
           </v-expansion-panel-header>
@@ -12,7 +14,9 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header>
+          <v-expansion-panel-header
+            :class="panel > 1 ? 'primary lighten-4' : ''"
+          >
             HEADER SETTINGS
             <span v-if="panel > 1">"{{ sheetname }}" {{ headerRow }}</span>
           </v-expansion-panel-header>
@@ -49,7 +53,9 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header>
+          <v-expansion-panel-header
+            :class="panel > 2 ? 'primary lighten-4' : ''"
+          >
             FILTER [NOT WORK]
           </v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -69,7 +75,9 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header>
+          <v-expansion-panel-header
+            :class="panel > 3 ? 'primary lighten-4' : ''"
+          >
             CONTENT
           </v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -113,6 +121,7 @@ const Super = Vue.extend({
     ...xlsxFileModule.mapGetters([
       "filename",
       "sheetname",
+      "isFileLoaded",
       "headerRow",
       "currentPage",
       "currentRow",
@@ -137,6 +146,12 @@ const Super = Vue.extend({
 export default class ExcelViewer extends Super {
   panel: number = 0;
   filterColumn: KV | null = null;
+
+  created() {
+    if (this.isFileLoaded) {
+      this.panel = 1;
+    }
+  }
 
   get selectSheet() {
     return this.sheetname;

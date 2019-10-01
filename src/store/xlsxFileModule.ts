@@ -25,6 +25,11 @@ class XLSXFileGetters extends Getters<XLSXFileState> {
     return this.state.workbook;
   }
 
+  get isFileLoaded(): boolean {
+    if (this.state.filename && this.workbook) return true;
+    return false;
+  }
+
   get sheetname() {
     return this.state.sheetname;
   }
@@ -181,6 +186,7 @@ function getSheetRow(num: number, sheet: XLSX.Sheet, range: XLSX.Range) {
   }
   return row;
 }
+
 export const xlsxFileModule = new Module({
   state: XLSXFileState,
   getters: XLSXFileGetters,

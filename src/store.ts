@@ -1,7 +1,12 @@
-import Vuex from 'vuex';
+import Vuex, { Store } from 'vuex';
 import { Module, createStore as cs } from 'vuex-smart-module';
+import VuexPersistence from 'vuex-persist';
 
 import { xlsxFileModule } from '@/store/xlsxFileModule';
+
+const vuexLocal = new VuexPersistence({
+  storage: window.localStorage
+});
 
 export function createStore() {
   const rootModule = new Module({
@@ -10,5 +15,5 @@ export function createStore() {
     }
   });
 
-  return cs(rootModule);
+  return cs(rootModule, { plugins: [vuexLocal.plugin] });
 }

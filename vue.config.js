@@ -10,5 +10,6 @@ module.exports = {
     }
   },
   publicPath:
-    process.env.NODE_ENV === 'production' ? 'excel-document-reader/' : '/'
+    process.env.NODE_ENV === 'production' ? 'excel-document-reader/' : '/',
+  transpileDependencies: ['vuex-persist']
 };
